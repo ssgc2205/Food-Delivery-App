@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.surya.fooddelivery</groupId>
+        <artifactId>food-delivery-app</artifactId>
+        <version>1.0.0</version>
+    </parent>
+
+    <artifactId>common-security</artifactId>
+    <name>common-security</name>
+    <description>Shared JWT verification and role model, auto-configured into every service</description>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
+        <!-- Brings spring-security-oauth2-jose (Nimbus): JWT decoding, and encoding in auth-service. -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-oauth2-resource-server</artifactId>
+        </dependency>
+
+        <!--
+          Deliberately optional (= not transitive). This module is used by BOTH the servlet
+          services and the reactive api-gateway; pulling common-web (and therefore
+          spring-boot-starter-web + Tomcat) onto the gateway's classpath would flip Spring Boot's
+          application type from REACTIVE to SERVLET and break Spring Cloud Gateway entirely.
+          Servlet services already declare common-web themselves, so they get it anyway.
+        -->
+        <dependency>
+            <groupId>com.surya.fooddelivery</groupId>
+            <artifactId>common-web</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <!-- Same reasoning: only order-service uses Feign, so the relay interceptor stays optional. -->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-openfeign</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-circuitbreaker-resilience4j</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <!-- Compile-time only: the reactive JWT decoder used by the (WebFlux) gateway. -->
+        <dependency>
+            <groupId>io.projectreactor</groupId>
+            <artifactId>reactor-core</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-configuration-processor</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+</project>

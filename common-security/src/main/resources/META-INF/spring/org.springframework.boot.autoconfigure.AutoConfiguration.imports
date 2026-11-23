@@ -1,0 +1,3 @@
+com.surya.fooddelivery.security.servlet.ResourceServerAutoConfiguration
+com.surya.fooddelivery.security.reactive.ReactiveJwtAutoConfiguration
+com.surya.fooddelivery.security.feign.FeignTokenRelayAutoConfiguration

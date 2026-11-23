@@ -1,0 +1,41 @@
+server:
+  port: 8087
+
+spring:
+  application:
+    name: auth-service
+  datasource:
+    url: jdbc:postgresql://${POSTGRES_HOST:localhost}:${POSTGRES_PORT:5432}/${POSTGRES_DB:authdb}
+    username: ${POSTGRES_USER:postgres}
+    password: ${POSTGRES_PASSWORD:postgres}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+
+security:
+  jwt:
+    # The signing key. Every service verifies against this same value, so it must match everywhere.
+    # The default is a development convenience ONLY — set JWT_SECRET to a long random string
+    # anywhere real. HS256 needs at least 32 characters; startup fails loudly if it is shorter.
+    secret: ${JWT_SECRET:dev-only-jwt-secret-change-me-before-deploying-anywhere}
+    issuer: food-delivery-auth
+    access-token-ttl: 2h
+
+  # Seeds the first administrator on an empty database, since creating an admin needs an admin.
+  # Turn this off outside local development.
+  bootstrap-admin:
+    enabled: ${BOOTSTRAP_ADMIN_ENABLED:true}
+    username: ${BOOTSTRAP_ADMIN_USERNAME:admin}
+    password: ${BOOTSTRAP_ADMIN_PASSWORD:admin12345}
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://${EUREKA_HOST:localhost}:8761/eureka/
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info

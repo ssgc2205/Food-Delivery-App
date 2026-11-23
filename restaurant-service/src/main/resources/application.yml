@@ -1,0 +1,32 @@
+server:
+  port: 8082
+
+spring:
+  application:
+    name: restaurant-service
+  datasource:
+    url: jdbc:postgresql://${POSTGRES_HOST:localhost}:${POSTGRES_PORT:5432}/${POSTGRES_DB:restaurantdb}
+    username: ${POSTGRES_USER:postgres}
+    password: ${POSTGRES_PASSWORD:postgres}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://${EUREKA_HOST:localhost}:8761/eureka/
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+security:
+  jwt:
+    # Verification only — this service never signs anything. Must match the value auth-service
+    # signs with; a mismatch shows up as every request failing with 401.
+    secret: ${JWT_SECRET:dev-only-jwt-secret-change-me-before-deploying-anywhere}
+    issuer: food-delivery-auth

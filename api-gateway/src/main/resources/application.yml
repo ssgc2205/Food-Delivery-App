@@ -1,0 +1,141 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          # Deliberately OFF.
+          #
+          # When enabled, every registered service is also exposed at /<service-id>/**, which
+          # quietly defeats the role rules in GatewaySecurityConfig: those match on /api/... paths,
+          # so a signed-in customer blocked from POST /api/restaurants could simply POST to
+          # /restaurant-service/api/restaurants instead. An auto-generated route is an
+          # auto-generated hole. Routes are declared explicitly below so the gateway's attack
+          # surface is exactly what is written here — including the /docs/** routes that used to
+          # be the only reason the locator was on.
+          enabled: false
+      routes:
+        - id: auth-service
+          uri: lb://auth-service
+          predicates:
+            - Path=/api/auth/**
+        - id: user-service
+          uri: lb://user-service
+          predicates:
+            - Path=/api/users/**
+        - id: restaurant-service
+          uri: lb://restaurant-service
+          predicates:
+            - Path=/api/restaurants/**
+        - id: order-service
+          uri: lb://order-service
+          predicates:
+            - Path=/api/orders/**
+        - id: payment-service
+          uri: lb://payment-service
+          predicates:
+            - Path=/api/payments/**
+        - id: delivery-service
+          uri: lb://delivery-service
+          predicates:
+            - Path=/api/deliveries/**
+        - id: notification-service
+          uri: lb://notification-service
+          predicates:
+            - Path=/api/notifications/**
+
+        # OpenAPI documents, so one Swagger UI can offer every service in a dropdown.
+        # /docs/<service>/v3/api-docs -> <service>/v3/api-docs
+        - id: auth-service-docs
+          uri: lb://auth-service
+          predicates:
+            - Path=/docs/auth-service/v3/api-docs/**
+          filters:
+            - RewritePath=/docs/auth-service/(?<segment>.*), /$\{segment}
+        - id: user-service-docs
+          uri: lb://user-service
+          predicates:
+            - Path=/docs/user-service/v3/api-docs/**
+          filters:
+            - RewritePath=/docs/user-service/(?<segment>.*), /$\{segment}
+        - id: restaurant-service-docs
+          uri: lb://restaurant-service
+          predicates:
+            - Path=/docs/restaurant-service/v3/api-docs/**
+          filters:
+            - RewritePath=/docs/restaurant-service/(?<segment>.*), /$\{segment}
+        - id: order-service-docs
+          uri: lb://order-service
+          predicates:
+            - Path=/docs/order-service/v3/api-docs/**
+          filters:
+            - RewritePath=/docs/order-service/(?<segment>.*), /$\{segment}
+        - id: payment-service-docs
+          uri: lb://payment-service
+          predicates:
+            - Path=/docs/payment-service/v3/api-docs/**
+          filters:
+            - RewritePath=/docs/payment-service/(?<segment>.*), /$\{segment}
+        - id: delivery-service-docs
+          uri: lb://delivery-service
+          predicates:
+            - Path=/docs/delivery-service/v3/api-docs/**
+          filters:
+            - RewritePath=/docs/delivery-service/(?<segment>.*), /$\{segment}
+        - id: notification-service-docs
+          uri: lb://notification-service
+          predicates:
+            - Path=/docs/notification-service/v3/api-docs/**
+          filters:
+            - RewritePath=/docs/notification-service/(?<segment>.*), /$\{segment}
+
+app:
+  cors:
+    # Only needed when the frontend is served from a different origin than this gateway — i.e.
+    # the IDE workflow in TESTING.md. Under `docker compose up` nginx serves the UI and proxies
+    # /api to here, so everything is same-origin and none of this is exercised.
+    #   3000 = ./frontend/serve.sh (and the nginx container)
+    #   5173 = Vite's default, if a JS toolchain is ever added
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000,http://127.0.0.1:3000,http://localhost:5173}
+
+security:
+  jwt:
+    # Must be byte-for-byte the same value auth-service signs with, or every token fails
+    # verification here with a 401 that looks like a login problem.
+    secret: ${JWT_SECRET:dev-only-jwt-secret-change-me-before-deploying-anywhere}
+    issuer: food-delivery-auth
+
+springdoc:
+  swagger-ui:
+    # One Swagger UI at the gateway with a dropdown for every service's API docs.
+    path: /swagger-ui.html
+    urls:
+      - name: auth-service
+        url: /docs/auth-service/v3/api-docs
+      - name: user-service
+        url: /docs/user-service/v3/api-docs
+      - name: restaurant-service
+        url: /docs/restaurant-service/v3/api-docs
+      - name: order-service
+        url: /docs/order-service/v3/api-docs
+      - name: payment-service
+        url: /docs/payment-service/v3/api-docs
+      - name: delivery-service
+        url: /docs/delivery-service/v3/api-docs
+      - name: notification-service
+        url: /docs/notification-service/v3/api-docs
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://${EUREKA_HOST:localhost}:8761/eureka/
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,gateway

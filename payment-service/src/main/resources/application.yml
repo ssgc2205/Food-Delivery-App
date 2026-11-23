@@ -1,0 +1,44 @@
+server:
+  port: 8084
+
+spring:
+  application:
+    name: payment-service
+  datasource:
+    url: jdbc:postgresql://${POSTGRES_HOST:localhost}:${POSTGRES_PORT:5432}/${POSTGRES_DB:paymentdb}
+    username: ${POSTGRES_USER:postgres}
+    password: ${POSTGRES_PASSWORD:postgres}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP:localhost:9092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    consumer:
+      group-id: payment-service
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: com.surya.fooddelivery.events
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://${EUREKA_HOST:localhost}:8761/eureka/
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+security:
+  jwt:
+    # Verification only — this service never signs anything. Must match the value auth-service
+    # signs with; a mismatch shows up as every request failing with 401.
+    secret: ${JWT_SECRET:dev-only-jwt-secret-change-me-before-deploying-anywhere}
+    issuer: food-delivery-auth

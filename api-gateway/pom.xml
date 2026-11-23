@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.surya.fooddelivery</groupId>
+        <artifactId>food-delivery-app</artifactId>
+        <version>1.0.0</version>
+    </parent>
+
+    <artifactId>api-gateway</artifactId>
+    <name>api-gateway</name>
+    <description>Spring Cloud Gateway edge service</description>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-gateway</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+        <!--
+          Brings the shared Role enum and the reactive JWT decoder. Deliberately NOT common-web:
+          that module carries spring-boot-starter-web, whose presence would make Spring Boot start
+          this application as a servlet app and break Spring Cloud Gateway.
+        -->
+        <dependency>
+            <groupId>com.surya.fooddelivery</groupId>
+            <artifactId>common-security</artifactId>
+        </dependency>
+        <!-- WebFlux flavour: the gateway is reactive, unlike the MVC services -->
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webflux-ui</artifactId>
+            <version>${springdoc.version}</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
